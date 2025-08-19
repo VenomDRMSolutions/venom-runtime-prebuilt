@@ -156,3 +156,16 @@ PKG="venom-runtime-ubuntu-${DISTRO}-${ARCH}-php${PHP_VERSION}-nginx${NGINX_VERSI
 cd "$STAGE"; tar -czf "$PKG" .; sha256sum "$PKG" > "${PKG}.sha256"
 mkdir -p "$ROOT/dist/${DISTRO}/${ARCH}"; mv "$PKG"* "$ROOT/dist/${DISTRO}/${ARCH}/"
 echo "Built: dist/${DISTRO}/${ARCH}/${PKG}"
+
+# 8) التغليف + checksum (اكتب خارج $STAGE لتجنب tar: . changed)
+PKG="venom-runtime-ubuntu-${DISTRO}-${ARCH}-php${PHP_VERSION}-nginx${NGINX_VERSION}-redis${REDIS_VERSION}.tar.gz"
+TMPPKG="/tmp/${PKG}"
+
+# نضغط محتويات الـ STAGE من خارج المجلد نفسه
+tar -C "$STAGE" --warning=no-file-changed -czf "$TMPPKG" .
+
+# SHA256 وإخراج نهائي
+sha256sum "$TMPPKG" > "${TMPPKG}.sha256"
+mkdir -p "$ROOT/dist/${DISTRO}/${ARCH}"
+mv "$TMPPKG"* "$ROOT/dist/${DISTRO}/${ARCH}/"
+echo "Built: dist/${DISTRO}/${ARCH}/${PKG}"
