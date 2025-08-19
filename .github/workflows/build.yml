@@ -23,7 +23,7 @@ jobs:
             bison re2c \
             libssl-dev zlib1g-dev libpcre3-dev \
             libxml2-dev libsqlite3-dev libzip-dev libcurl4-openssl-dev \
-            libjpeg-dev libpng-dev libfreetype6-dev libicu-dev
+            libjpeg-dev libpng-dev libfreetype6-dev libicu-dev libonig-dev
           update-ca-certificates || true
       - uses: actions/checkout@v4
       - name: Build
