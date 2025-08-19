@@ -69,7 +69,7 @@ cd "nginx-${NGINX_VERSION}"
   --prefix="$VENOM_HOME/nginx" \
   --with-http_ssl_module \
   --with-http_gzip_static_module \
-  --with-pcre
+  --with-pcre-jit
 make -j"$(nproc)"
 make DESTDIR="$STAGE" install
 mkdir -p "$STAGE$VENOM_HOME/nginx/conf"
