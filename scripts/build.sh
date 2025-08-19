@@ -120,7 +120,7 @@ cd "$BUILD"
 tar -xzf "redis-${REDIS_VERSION}.tar.gz"
 cd "redis-${REDIS_VERSION}"
 make -j"$(nproc)"
-make PREFIX="$STAGE$VENOM_HOME/redis" install
+make -j"$(nproc)" PREFIX="$STAGE$VENOM_HOME/redis" install
 
 # 5) index.php بسيط
 cat > "$STAGE$VENOM_HOME/www/public/index.php" <<'PHP'

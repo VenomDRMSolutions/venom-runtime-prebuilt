@@ -2,13 +2,16 @@ name: Build Prebuilt Runtime
 on:
   push:
     tags: [ "v*" ]
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         distro: ["20.04","22.04","24.04"]
         arch: ["x86_64"]
     runs-on: ubuntu-24.04
+    timeout-minutes: 120
     container:
       image: ubuntu:${{ matrix.distro }}
     steps:
@@ -21,15 +24,19 @@ jobs:
             ca-certificates curl git xz-utils tar wget \
             build-essential autoconf automake libtool pkg-config \
             bison re2c \
-            libssl-dev zlib1g-dev libpcre3-dev \
+            libssl-dev zlib1g-dev libpcre3-dev libpcre2-dev \
             libxml2-dev libsqlite3-dev libzip-dev libcurl4-openssl-dev \
             libjpeg-dev libpng-dev libfreetype6-dev libicu-dev libonig-dev
           update-ca-certificates || true
+
       - uses: actions/checkout@v4
+
       - name: Build
         run: |
+          set -eux
           chmod +x scripts/build.sh
           ./scripts/build.sh "${{ matrix.distro }}" "${{ matrix.arch }}"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
