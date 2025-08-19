@@ -1,0 +1,48 @@
+name: Build Prebuilt Runtime
+on:
+  push:
+    tags: [ "v*" ]
+jobs:
+  build:
+    strategy:
+      matrix:
+        distro: ["20.04","22.04","24.04"]
+        arch: ["x86_64"]
+    runs-on: ubuntu-24.04
+    container:
+      image: ubuntu:${{ matrix.distro }}
+    steps:
+      - name: Prepare container
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            ca-certificates curl git xz-utils build-essential autoconf automake libtool pkg-config \
+            libssl-dev zlib1g-dev libpcre3-dev \
+            libxml2-dev libsqlite3-dev libzip-dev libcurl4-openssl-dev \
+            libjpeg-dev libpng-dev libfreetype6-dev libicu-dev \
+            tar wget
+          update-ca-certificates || true
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          chmod +x scripts/build.sh
+          ./scripts/build.sh "${{ matrix.distro }}" "${{ matrix.arch }}"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: venom-runtime-${{ matrix.distro }}-${{ matrix.arch }}
+          path: dist/${{ matrix.distro }}/${{ matrix.arch }}/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./all
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./all/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
