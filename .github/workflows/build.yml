@@ -3,6 +3,10 @@ on:
   push:
     tags: [ "v*" ]
 
+# 👈 مهم: ندي صلاحيات كتابة للـ GITHUB_TOKEN
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -46,13 +50,16 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-24.04
+    # نكرر الصلاحية جوّا الجوب (احتياط)
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: ./all
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: ./all/**/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
