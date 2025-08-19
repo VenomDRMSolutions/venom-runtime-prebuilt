@@ -152,20 +152,26 @@ chmod +x "$STAGE$VENOM_HOME/venom"
 install -Dm755 "$ROOT/scripts/postinstall.sh" "$STAGE$VENOM_HOME/scripts/postinstall.sh"
 
 # 8) تغليف + checksum
-PKG="venom-runtime-ubuntu-${DISTRO}-${ARCH}-php${PHP_VERSION}-nginx${NGINX_VERSION}-redis${REDIS_VERSION}.tar.gz"
-cd "$STAGE"; tar -czf "$PKG" .; sha256sum "$PKG" > "${PKG}.sha256"
-mkdir -p "$ROOT/dist/${DISTRO}/${ARCH}"; mv "$PKG"* "$ROOT/dist/${DISTRO}/${ARCH}/"
-echo "Built: dist/${DISTRO}/${ARCH}/${PKG}"
 
-# 8) التغليف + checksum (اكتب خارج $STAGE لتجنب tar: . changed)
-PKG="venom-runtime-ubuntu-${DISTRO}-${ARCH}-php${PHP_VERSION}-nginx${NGINX_VERSION}-redis${REDIS_VERSION}.tar.gz"
-TMPPKG="/tmp/${PKG}"
 
-# نضغط محتويات الـ STAGE من خارج المجلد نفسه
-tar -C "$STAGE" --warning=no-file-changed -czf "$TMPPKG" .
+# 8) التغليف + checksum (ننسخ لمجلد ثابت ثم نضغط خارج STAGE)
+PKG="venom-runtime-ubuntu-${DISTRO}-${ARCH}-php${PHP_VERSION}-nginx${NGINX_VERSION}-redis${REDIS_VERSION}"
+PKGROOT="$(mktemp -d /tmp/venom-pkgroot.XXXX)"
+TMPPKG="/tmp/${PKG}.tar.gz"
+
+# خُد Snapshot ثابت من محتوى STAGE إلى مجلد مؤقت
+rsync -a --delete "$STAGE"/ "$PKGROOT"/
+
+# اكتب الأرشيف خارج المجلد المؤقت عشان نتجنب أي كتابة أثناء القراءة
+tar -C "$PKGROOT" -czf "$TMPPKG" .
 
 # SHA256 وإخراج نهائي
 sha256sum "$TMPPKG" > "${TMPPKG}.sha256"
+
 mkdir -p "$ROOT/dist/${DISTRO}/${ARCH}"
 mv "$TMPPKG"* "$ROOT/dist/${DISTRO}/${ARCH}/"
-echo "Built: dist/${DISTRO}/${ARCH}/${PKG}"
+
+# تنظيف
+rm -rf "$PKGROOT"
+
+echo "Built: dist/${DISTRO}/${ARCH}/$(basename "$TMPPKG")"

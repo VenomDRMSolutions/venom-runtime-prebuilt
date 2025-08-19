@@ -21,7 +21,7 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
           apt-get install -y \
-            ca-certificates curl git xz-utils tar wget \
+            ca-certificates curl git xz-utils tar wget rsync \
             build-essential autoconf automake libtool pkg-config \
             bison re2c \
             libssl-dev zlib1g-dev libpcre3-dev libpcre2-dev \
